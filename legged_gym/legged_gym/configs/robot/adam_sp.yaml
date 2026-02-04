@@ -1,0 +1,178 @@
+# Adam SP：29 DOF（腿12 + 腰3 roll/pitch/yaw + 臂14），手指已 fix
+name: adam_sp
+env:
+  blind: true
+  num_envs: ${num_envs}
+
+  num_one_step_perception: 162 #104
+  num_privileged_perception: 220 #187
+  num_actor_history: 5
+  num_actor_history_high: 1
+  num_critic_history: 1
+  num_critic_history_low: 1
+
+  num_actions: 30
+  num_dofs: 29
+  # 与 g1 一致：actor 单步观测只到 lidar_pos，不含 imu_quat、base_lin_vel、motion_dof_pos（这些仍在 privileged_obs 里）
+  # 单步 = ang_vel(3)+gravity(3)+dof_pos(29)+dof_vel(29)+actions(30)+norm_time(1)+infer(1)+terrain(1)+lidar_pos(3) = 102
+  num_one_step_observations: 102
+  num_one_step_privileged_obs: 136
+  num_observations: 510
+  num_privileged_obs: 136
+  num_observations_high: 102
+  num_privileged_obs_high: 136
+
+  env_spacing: 5.
+  send_timeouts: true
+  episode_length_s: 10
+  fixed_episode_length: false
+  odometry: true
+
+  # 电机等效惯量（用于 PD，与 g1 类似）
+  ARMATURE_5020: 0.003609725
+  2_ARMATURE_5020: 0.00721945
+  ARMATURE_7520_14: 0.010177520
+  ARMATURE_7520_22: 0.025101925
+  ARMATURE_4010: 0.00425
+
+init_state:
+  pos: [1.65, 0., 0.]
+  rot: [0.0, 0.0, 0.0, 1.0]
+  lin_vel: [0.0, 0.0, 0.0]
+  ang_vel: [0.0, 0.0, 0.0]
+
+  # 关节名与 adam_sp.urdf 一致（29 DOF：腿12 + 腰3 + 臂14）
+  all_default_joint_angles: {
+    hipPitch_Left: -0.1, hipRoll_Left: 0.0, hipYaw_Left: 0.0,
+    kneePitch_Left: 0.3, anklePitch_Left: -0.2, ankleRoll_Left: 0.0,
+    hipPitch_Right: -0.1, hipRoll_Right: 0.0, hipYaw_Right: 0.0,
+    kneePitch_Right: 0.3, anklePitch_Right: -0.2, ankleRoll_Right: 0.0,
+    waistRoll: 0.0, waistPitch: 0.0, waistYaw: 0.0,
+    shoulderPitch_Left: 0.0, shoulderRoll_Left: 0.1, shoulderYaw_Left: 0.0,
+    elbow_Left: -0.3, wristYaw_Left: 0.0, wristPitch_Left: 0.0, wristRoll_Left: 0.0,
+    shoulderPitch_Right: 0.0, shoulderRoll_Right: -0.1, shoulderYaw_Right: 0.0,
+    elbow_Right: -0.3, wristYaw_Right: 0.0, wristPitch_Right: 0.0, wristRoll_Right: 0.0,
+  }
+
+  actutaed_default_joint_angles: {
+    hipPitch_Left: -0.1, hipRoll_Left: 0.0, hipYaw_Left: 0.0,
+    kneePitch_Left: 0.3, anklePitch_Left: -0.2, ankleRoll_Left: 0.0,
+    hipPitch_Right: -0.1, hipRoll_Right: 0.0, hipYaw_Right: 0.0,
+    kneePitch_Right: 0.3, anklePitch_Right: -0.2, ankleRoll_Right: 0.0,
+    waistRoll: 0.0, waistPitch: 0.0, waistYaw: 0.0,
+    shoulderPitch_Left: 0.0, shoulderRoll_Left: 0.1, shoulderYaw_Left: 0.0,
+    elbow_Left: -0.3, wristYaw_Left: 0.0, wristPitch_Left: 0.0, wristRoll_Left: 0.0,
+    shoulderPitch_Right: 0.0, shoulderRoll_Right: -0.1, shoulderYaw_Right: 0.0,
+    elbow_Right: -0.3, wristYaw_Right: 0.0, wristPitch_Right: 0.0, wristRoll_Right: 0.0,
+  }
+
+control:
+  control_type: 'P'
+  # key 需为关节名子串（URDF: hipPitch_Left, hipRoll_Left, ... kneePitch_Left, anklePitch_Left, ...）
+  stiffness: {'hipPitch': 200,
+                'hipRoll': 350,
+                'hipYaw': 200,
+                'kneePitch': 300,
+                'anklePitch': 60,
+                'ankleRoll': 60,
+                'shoulder': 60,
+                'elbow':  60,
+                'waistRoll': 300,
+                'waistPitch': 300,
+                'waistYaw': 300,
+                'wrist': 5,
+                }  # [N*m/rad]
+  damping: { 'hipPitch': 2,
+                'hipRoll': 5,
+                'hipYaw': 2,
+                'kneePitch': 3,
+                'anklePitch': 1.5,
+                'ankleRoll': 1.5,
+                'shoulder': 2,
+                'elbow':  1,
+                'waistRoll': 10,
+                'waistPitch': 10,
+                'waistYaw': 10,
+                'wrist': 1,
+                }  # [N*m/rad]  # [N*m*s/rad]
+  # 来自 adam_sp MuJoCo XML（armature_updated 版本）
+  armature: {
+    hipPitch: 0.13426, hipRoll: 0.281573, hipYaw: 0.23409,
+    kneePitch: 0.13426, anklePitch: 0.0549, ankleRoll: 0.0549,
+    waistRoll: 0.23409, waistPitch: 0.23409, waistYaw: 0.23409,
+    shoulderPitch: 0.01, shoulderRoll: 0.01, shoulderYaw: 0.01,
+    elbow: 0.01, wristYaw: 0.01, wristPitch: 0.01, wristRoll: 0.01,
+  }
+
+  use_range: true
+  # 12 leg + 3 waist (roll, pitch, yaw) + 14 arm
+  action_scale: [1.0951, 0.7013, 1.0951, 0.7013, 0.8772, 0.8772,
+                 1.0951, 0.7013, 1.0951, 0.7013, 0.8772, 0.8772,
+                 1.0951, 1.0951, 1.0951,
+                 0.8772, 0.8772, 0.8772, 0.8772, 0.8772, 0.1490, 0.1490,
+                 0.8772, 0.8772, 0.8772, 0.8772, 0.8772, 0.1490, 0.1490]
+  decimation: 4
+
+  left_leg_joints: [hipPitch_Left, hipRoll_Left, hipYaw_Left, kneePitch_Left, anklePitch_Left, ankleRoll_Left]
+  right_leg_joints: [hipPitch_Right, hipRoll_Right, hipYaw_Right, kneePitch_Right, anklePitch_Right, ankleRoll_Right]
+  curriculum_joints: [waistRoll, waistPitch, waistYaw, shoulderPitch_Left, shoulderRoll_Left, shoulderYaw_Left, elbow_Left, wristYaw_Left, wristPitch_Left, wristRoll_Left, shoulderPitch_Right, shoulderRoll_Right, shoulderYaw_Right, elbow_Right, wristYaw_Right, wristPitch_Right, wristRoll_Right]
+  left_arm_joints: [shoulderPitch_Left, shoulderRoll_Left, shoulderYaw_Left, elbow_Left, wristYaw_Left, wristPitch_Left, wristRoll_Left]
+  right_arm_joints: [shoulderPitch_Right, shoulderRoll_Right, shoulderYaw_Right, elbow_Right, wristYaw_Right, wristPitch_Right, wristRoll_Right]
+  upper_body_link: pelvis
+
+  left_hip_joints: [hipPitch_Left, hipRoll_Left, hipYaw_Left]
+  right_hip_joints: [hipPitch_Right, hipRoll_Right, hipYaw_Right]
+
+asset:
+  file: /resources/robots/adam_sp/adam_sp.urdf
+  name: adam_sp
+  foot_name: ankleRoll
+  foot_side_name: ankleRoll_side
+  left_foot_name: toeLeft
+  right_foot_name: toeRight
+  penalize_contacts_on: [shin, hip]
+  terminate_after_contacts_on: []
+
+  waist_joints: [waistRoll, waistPitch, waistYaw]
+  knee_joints: [kneePitch_Left, kneePitch_Right]
+  ankle_joints: [anklePitch_Left, anklePitch_Right, wristRoll_Left, wristRoll_Right]
+  upper_body_link: torso
+  imu_link: imu_link
+  knee_names: [shinLeft, shinRight]
+
+  keyframe_name: keyframe
+  base_name: torso
+  lidar_name: mid360
+
+  # 使用与 g1 一致的脚部绑定约定：物理脚 link <-> keyframe_*_ankle_link
+  feet_contact_binding: {
+    left_ankle: toeLeft,
+    right_ankle: toeRight,
+  }
+  keyframe_weights: {
+    head: 1.0, torso: 2.0, pelvis: 2.0,
+    collar: 1.0, shoulder: 1.0, elbow: 1.0, wrist: 2.0,
+    hip: 1.0, knee: 1.0, ankle: 2.0,
+  }
+  upper_keyframe_names: [keyframe_pelvis_link, keyframe_head_link, keyframe_torso_link, keyframe_left_collar_link, keyframe_left_shoulder_link, keyframe_left_elbow_link, keyframe_left_wrist_link, keyframe_right_collar_link, keyframe_right_shoulder_link, keyframe_right_elbow_link, keyframe_right_wrist_link]
+  lower_keyframe_names: [keyframe_left_hip_link, keyframe_left_knee_link, keyframe_left_ankle_link, keyframe_right_hip_link, keyframe_right_knee_link, keyframe_right_ankle_link]
+
+  trunk_names: [pelvis, torso]
+  mobile_names: [kneePitch, anklePitch]
+  marker_names: [head, elbow, wrist]
+
+  disable_gravity: false
+  collapse_fixed_joints: false
+  fix_base_link: false
+  default_dof_drive_mode: 3
+  self_collisions: 0
+  replace_cylinder_with_capsule: true
+  flip_visual_attachments: false
+
+  density: 0.001
+  angular_damping: 0.01
+  linear_damping: 0.01
+  max_angular_velocity: 1000.
+  max_linear_velocity: 1000.
+  armature: 0.
+  thickness: 0.01

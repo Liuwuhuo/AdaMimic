@@ -1,0 +1,7 @@
+defaults:
+  - badminton_hit
+  - _self_
+
+dataset:
+  folder: ${base}/resources/dataset/adam_sp_data/badminton_hit/output
+  joint_mapping: ${base}/resources/dataset/adam_sp_data/joint_id.txt

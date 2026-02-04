@@ -1,0 +1,7 @@
+defaults:
+  - triple_jump
+  - _self_
+
+dataset:
+  folder: ${base}/resources/dataset/adam_sp_data/triple_jump/output
+  joint_mapping: ${base}/resources/dataset/adam_sp_data/joint_id.txt

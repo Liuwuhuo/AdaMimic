@@ -3,15 +3,15 @@ channels:
   - defaults
 dependencies:
   - python=3.8
-  - tensorboard
-  - tqdm
-  - numpy=1.20.3
-  - seaborn
-  - GitPython
-  - pydelatin
-  - pyfqmr
-  - hydra-core
   - pip
-  - wandb
   - pip:
+    - numpy==1.20.3
+    - tensorboard
+    - tqdm
+    - seaborn
+    - GitPython
+    - pydelatin
+    - pyfqmr
+    - hydra-core
+    - wandb
     - git+https://github.com/KellerJordan/Muon

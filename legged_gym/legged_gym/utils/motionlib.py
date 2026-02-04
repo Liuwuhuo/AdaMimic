@@ -133,29 +133,36 @@ class MotionLib:
         self.body_names = [name for name in body_names]
         print(body_names)
 
+        def _to_tensor(x):
+            """numpy 或 torch 均转为 device 上的 float tensor，供 MotionLib 使用"""
+            if isinstance(x, np.ndarray):
+                return torch.from_numpy(x).float().to(self.device)
+            return x.detach().to(self.device)
+
         compute_velocity = lambda x: (x[1:] - x[:-1]) * self.fps
         print(f"Moving motion dataset to {self.device}...")
         for i, data in enumerate(tqdm(datasets)):
-            start, end = self.start_ids[i], self.end_ids[i]    
-            self.base_pos[start:end] = data["base_position"][:-1].clone().detach()
-            self.base_rpy[start:end] = data["base_pose"][:-1].clone().detach()
-            self.base_lin_vel[start:end] = compute_velocity(data["base_position"]).clone().detach()
-            self.base_ang_vel[start:end] = compute_velocity(data["base_pose"]).clone().detach()
-            
-            dof_pos = data["joint_position"][:-1].clone().detach()
-            dof_vel = compute_velocity(data["joint_position"]).clone().detach()
+            start, end = self.start_ids[i], self.end_ids[i]
+            base_pos = _to_tensor(data["base_position"])
+            base_pose = _to_tensor(data["base_pose"])
+            self.base_pos[start:end] = base_pos[:-1]
+            self.base_rpy[start:end] = base_pose[:-1]
+            self.base_lin_vel[start:end] = compute_velocity(base_pos)
+            self.base_ang_vel[start:end] = compute_velocity(base_pose)
+
+            dof_pos = _to_tensor(data["joint_position"])[:-1]
+            dof_vel = compute_velocity(_to_tensor(data["joint_position"]))
             for j, name in enumerate(dof_names):
                 if name in mapping.keys():
                     self.dof_pos[start:end, j] = dof_pos[:, mapping[name]]
                     self.dof_vel[start:end, j] = dof_vel[:, mapping[name]]
 
             for k, name in enumerate(body_names):
-                # import ipdb; ipdb.set_trace()
-                self.body_pos[start:end, k] = data["link_position"][:-1, k,].clone().detach()
-                self.body_rpy[start:end, k] = data["link_orientation"][:-1, k].clone().detach()
-                self.body_lin_vel[start:end, k] = data["link_velocity"][:-1, k].clone().detach()
-                self.body_ang_vel[start:end, k] =data["link_angular_velocity"][:-1, k].clone().detach()
-            
+                self.body_pos[start:end, k] = _to_tensor(data["link_position"][:-1, k])
+                self.body_rpy[start:end, k] = _to_tensor(data["link_orientation"][:-1, k])
+                self.body_lin_vel[start:end, k] = _to_tensor(data["link_velocity"][:-1, k])
+                self.body_ang_vel[start:end, k] = _to_tensor(data["link_angular_velocity"][:-1, k])
+
             self.body_pos[start:end, :, 0:2] -= self.base_pos[start:start+1, None, 0:2]
             self.base_pos[start:end, 0:2] -= self.base_pos[start:start+1, 0:2].clone() 
             

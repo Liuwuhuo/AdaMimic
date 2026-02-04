@@ -1984,11 +1984,19 @@ class LeggedRobot(BaseTask):
         left_feet_names = [s for s in body_names if self.cfg.asset.left_foot_name in s]
         right_feet_names = [s for s in body_names if self.cfg.asset.right_foot_name in s]
         lidar_name = [s for s in body_names if self.cfg.asset.lidar_name in s]
- 
-        self.lidar_index = torch.zeros(len(lidar_name), dtype=torch.long, device=self.device, requires_grad=False)
-        for i in range(len(lidar_name)):
-            self.lidar_index[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], lidar_name[i])
- 
+
+        self.lidar_index = torch.zeros(max(1, len(lidar_name)), dtype=torch.long, device=self.device, requires_grad=False)
+        if len(lidar_name) > 0:
+            for i in range(len(lidar_name)):
+                self.lidar_index[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], lidar_name[i])
+        else:
+            # 无 lidar link 时用 base（torso）作为 odometry 参考，避免 lidar_index[0] 越界
+            base_name = [s for s in body_names if self.cfg.asset.base_name in s]
+            if len(base_name) > 0:
+                self.lidar_index[0] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], base_name[0])
+            else:
+                self.lidar_index[0] = 0
+
         self.feet_indices = torch.zeros(len(feet_names), dtype=torch.long, device=self.device, requires_grad=False)
         for i in range(len(feet_names)):
             self.feet_indices[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], feet_names[i])
