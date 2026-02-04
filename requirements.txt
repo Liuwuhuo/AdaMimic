@@ -1,0 +1,11 @@
+# pip 依赖，用于 conda 环境创建后：pip install -r requirements.txt
+numpy==1.20.3
+tensorboard
+tqdm
+seaborn
+GitPython
+pydelatin
+pyfqmr
+hydra-core
+wandb
+# Muon 需单独安装: pip install git+https://github.com/KellerJordan/Muon

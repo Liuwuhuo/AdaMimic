@@ -2,19 +2,32 @@
 
 set -e
 
-# ==== 配置区域：如需修改环境名或 Conda 路径，在这里改 ====
+# ==== 配置区域：仅环境名可改，conda 路径自动检测 ====
 ENV_NAME="adamimic"
-CONDA_BASE="${CONDA_BASE:-/home/liuhongji/anaconda3}"
 # ==========================================================
 
-# 加载 conda
-if [ -f "$CONDA_BASE/etc/profile.d/conda.sh" ]; then
-  # shellcheck source=/dev/null
-  source "$CONDA_BASE/etc/profile.d/conda.sh"
-else
-  echo "找不到 conda.sh，当前 CONDA_BASE = $CONDA_BASE" >&2
+# 自动检测 CONDA_BASE（可被环境变量 CONDA_BASE 覆盖）
+if [ -z "$CONDA_BASE" ]; then
+  if command -v conda &>/dev/null; then
+    CONDA_BASE="$(conda info --base 2>/dev/null)" || true
+  fi
+  if [ -z "$CONDA_BASE" ] || [ ! -d "$CONDA_BASE" ]; then
+    for d in "$HOME/anaconda3" "$HOME/miniconda3" "$HOME/miniconda" "/opt/conda"; do
+      if [ -f "$d/etc/profile.d/conda.sh" ]; then
+        CONDA_BASE="$d"
+        break
+      fi
+    done
+  fi
+fi
+
+# 脚本子 shell 中必须 source conda.sh，否则 conda activate 会报 Run 'conda init'
+if [ -z "$CONDA_BASE" ] || [ ! -f "$CONDA_BASE/etc/profile.d/conda.sh" ]; then
+  echo "未找到 conda。可设置: export CONDA_BASE=/path/to/anaconda3 或安装 conda 后重试" >&2
   exit 1
 fi
+# shellcheck source=/dev/null
+source "$CONDA_BASE/etc/profile.d/conda.sh"
 
 # 激活环境
 conda activate "$ENV_NAME"
