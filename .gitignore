@@ -70,7 +70,7 @@ legged_gym/exp_results/onnx
 legged_gym/exp_results/real
 legged_gym/exp_results/analysis
 legged_gym/legged_gym.egg-info
-legged_gym/resources/robots/
+# legged_gym/resources/robots/
 
 /exp
 # other

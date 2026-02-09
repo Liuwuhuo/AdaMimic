@@ -68,9 +68,28 @@ def main(cfg):
 
     _, _ = env.reset()
 
+    # 参考帧打印：每 N 步打印一次当前参考 keyframe 的 pos 和 quat（0=不打印）
+    print_ref_frame_interval = 60  # 约 1 秒一次 @60Hz
+    step_count = 0
+
     for i in range(100000*int(env.max_episode_length)):
         actions = policy(obs.detach())
         obs, critic_obs, obs_high, rews, _ , dones, infos, _ = env.step(actions.detach())
+
+        # 打印当前参考帧（env 0）的 keyframe pos / quat
+        if print_ref_frame_interval > 0 and (step_count % print_ref_frame_interval == 0):
+            body_pos = env.motion_dict["body_pos"][0].cpu().numpy()   # [num_keyframes, 3]
+            body_quat = env.motion_dict["body_quat"][0].cpu().numpy() # [num_keyframes, 4] (x,y,z,w)
+            norm_time = env.motion_dict.get("norm_time")
+            norm_t = float(norm_time[0].cpu().item()) if norm_time is not None else 0.0
+            motion_id = int(env.motion_ids[0].cpu().item())
+            print(f"\n--- ref frame @ step {step_count} (motion_id={motion_id}, norm_time={norm_t:.4f}) ---")
+            for j, name in enumerate(env.keyframe_names):
+                pos = body_pos[j]
+                quat = body_quat[j]
+                print(f"  [{j}] {name}: pos=[{pos[0]:.4f}, {pos[1]:.4f}, {pos[2]:.4f}], quat=[{quat[0]:.4f}, {quat[1]:.4f}, {quat[2]:.4f}, {quat[3]:.4f}]")
+
+        step_count += 1
         
 
 if __name__ == '__main__':

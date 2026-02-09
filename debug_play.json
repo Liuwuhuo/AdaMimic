@@ -1,0 +1,6 @@
+{
+  "robot": "g1_dof27",
+  "dataset": "g1_dof27/badminton_hit",
+  "algorithm": "adamimic/stage1",
+  "resume_path": "/home/liuhongji/workspace/exp/g1_dof27/badminton_hit/adamimic_stage1/20260204_185812_g1_dof27_badminton_hit_adamimic_stage1_test/model_9500.pt"
+}

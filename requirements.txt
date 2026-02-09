@@ -1,5 +1,7 @@
 # pip 依赖，用于 conda 环境创建后：pip install -r requirements.txt
-numpy==1.20.3
+# NumPy 需 >=1.21（1.20 在部分环境下 numpy.typing.NDArray 不可用），<1.24 避免与部分库不兼容
+numpy>=1.21,<1.24
+# Pillow>=9 依赖 NDArray；若仍报 NDArray 错可改为 Pillow<9
 tensorboard
 tqdm
 seaborn

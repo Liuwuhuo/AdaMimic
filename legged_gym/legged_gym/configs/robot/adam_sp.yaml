@@ -36,34 +36,34 @@ env:
   ARMATURE_4010: 0.00425
 
 init_state:
-  pos: [1.65, 0., 0.]
+  pos: [1.15, 0., 0.]
   rot: [0.0, 0.0, 0.0, 1.0]
   lin_vel: [0.0, 0.0, 0.0]
   ang_vel: [0.0, 0.0, 0.0]
 
   # 关节名与 adam_sp.urdf 一致（29 DOF：腿12 + 腰3 + 臂14）
   all_default_joint_angles: {
-    hipPitch_Left: -0.1, hipRoll_Left: 0.0, hipYaw_Left: 0.0,
-    kneePitch_Left: 0.3, anklePitch_Left: -0.2, ankleRoll_Left: 0.0,
-    hipPitch_Right: -0.1, hipRoll_Right: 0.0, hipYaw_Right: 0.0,
-    kneePitch_Right: 0.3, anklePitch_Right: -0.2, ankleRoll_Right: 0.0,
-    waistRoll: 0.0, waistPitch: 0.0, waistYaw: 0.0,
-    shoulderPitch_Left: 0.0, shoulderRoll_Left: 0.1, shoulderYaw_Left: 0.0,
-    elbow_Left: -0.3, wristYaw_Left: 0.0, wristPitch_Left: 0.0, wristRoll_Left: 0.0,
-    shoulderPitch_Right: 0.0, shoulderRoll_Right: -0.1, shoulderYaw_Right: 0.0,
-    elbow_Right: -0.3, wristYaw_Right: 0.0, wristPitch_Right: 0.0, wristRoll_Right: 0.0,
+    'hipPitch_Left': -0.1, 'hipRoll_Left': 0.0, 'hipYaw_Left': 0.0,
+    'kneePitch_Left': 0.3, 'anklePitch_Left': -0.2, 'ankleRoll_Left': 0.0,
+    'hipPitch_Right': -0.1, 'hipRoll_Right': 0.0, 'hipYaw_Right': 0.0,
+    'kneePitch_Right': 0.3, 'anklePitch_Right': -0.2, 'ankleRoll_Right': 0.0,
+    'waistRoll': 0.0, 'waistPitch': 0.0, 'waistYaw': 0.0,
+    'shoulderPitch_Left': 0.0, 'shoulderRoll_Left': 0.1, 'shoulderYaw_Left': 0.0,
+    'elbow_Left': -0.3, 'wristYaw_Left': 0.0, 'wristPitch_Left': 0.0, 'wristRoll_Left': 0.0,
+    'shoulderPitch_Right': 0.0, 'shoulderRoll_Right': -0.1, 'shoulderYaw_Right': 0.0,
+    'elbow_Right': -0.3, 'wristYaw_Right': 0.0, 'wristPitch_Right': 0.0, 'wristRoll_Right': 0.0,
   }
 
   actutaed_default_joint_angles: {
-    hipPitch_Left: -0.1, hipRoll_Left: 0.0, hipYaw_Left: 0.0,
-    kneePitch_Left: 0.3, anklePitch_Left: -0.2, ankleRoll_Left: 0.0,
-    hipPitch_Right: -0.1, hipRoll_Right: 0.0, hipYaw_Right: 0.0,
-    kneePitch_Right: 0.3, anklePitch_Right: -0.2, ankleRoll_Right: 0.0,
-    waistRoll: 0.0, waistPitch: 0.0, waistYaw: 0.0,
-    shoulderPitch_Left: 0.0, shoulderRoll_Left: 0.1, shoulderYaw_Left: 0.0,
-    elbow_Left: -0.3, wristYaw_Left: 0.0, wristPitch_Left: 0.0, wristRoll_Left: 0.0,
-    shoulderPitch_Right: 0.0, shoulderRoll_Right: -0.1, shoulderYaw_Right: 0.0,
-    elbow_Right: -0.3, wristYaw_Right: 0.0, wristPitch_Right: 0.0, wristRoll_Right: 0.0,
+    'hipPitch_Left': -0.1, 'hipRoll_Left': 0.0, 'hipYaw_Left': 0.0,
+    'kneePitch_Left': 0.3, 'anklePitch_Left': -0.2, 'ankleRoll_Left': 0.0,
+    'hipPitch_Right': -0.1, 'hipRoll_Right': 0.0, 'hipYaw_Right': 0.0,
+    'kneePitch_Right': 0.3, 'anklePitch_Right': -0.2, 'ankleRoll_Right': 0.0,
+    'waistRoll': 0.0, 'waistPitch': 0.0, 'waistYaw': 0.0,
+    'shoulderPitch_Left': 0.0, 'shoulderRoll_Left': 0.1, 'shoulderYaw_Left': 0.0,
+    'elbow_Left': -0.3, 'wristYaw_Left': 0.0, 'wristPitch_Left': 0.0, 'wristRoll_Left': 0.0,
+    'shoulderPitch_Right': 0.0, 'shoulderRoll_Right': -0.1, 'shoulderYaw_Right': 0.0,
+    'elbow_Right': -0.3, 'wristYaw_Right': 0.0, 'wristPitch_Right': 0.0, 'wristRoll_Right': 0.0,
   }
 
 control:
@@ -113,53 +113,53 @@ control:
                  0.8772, 0.8772, 0.8772, 0.8772, 0.8772, 0.1490, 0.1490]
   decimation: 4
 
-  left_leg_joints: [hipPitch_Left, hipRoll_Left, hipYaw_Left, kneePitch_Left, anklePitch_Left, ankleRoll_Left]
-  right_leg_joints: [hipPitch_Right, hipRoll_Right, hipYaw_Right, kneePitch_Right, anklePitch_Right, ankleRoll_Right]
-  curriculum_joints: [waistRoll, waistPitch, waistYaw, shoulderPitch_Left, shoulderRoll_Left, shoulderYaw_Left, elbow_Left, wristYaw_Left, wristPitch_Left, wristRoll_Left, shoulderPitch_Right, shoulderRoll_Right, shoulderYaw_Right, elbow_Right, wristYaw_Right, wristPitch_Right, wristRoll_Right]
-  left_arm_joints: [shoulderPitch_Left, shoulderRoll_Left, shoulderYaw_Left, elbow_Left, wristYaw_Left, wristPitch_Left, wristRoll_Left]
-  right_arm_joints: [shoulderPitch_Right, shoulderRoll_Right, shoulderYaw_Right, elbow_Right, wristYaw_Right, wristPitch_Right, wristRoll_Right]
-  upper_body_link: pelvis
+  left_leg_joints: ['hipPitch_Left', 'hipRoll_Left', 'hipYaw_Left', 'kneePitch_Left', 'anklePitch_Left', 'ankleRoll_Left']
+  right_leg_joints: ['hipPitch_Right', 'hipRoll_Right', 'hipYaw_Right', 'kneePitch_Right', 'anklePitch_Right', 'ankleRoll_Right']
+  curriculum_joints: ['waistRoll', 'waistPitch', 'waistYaw', 'shoulderPitch_Left', 'shoulderRoll_Left', 'shoulderYaw_Left', 'elbow_Left', 'wristYaw_Left', 'wristPitch_Left', 'wristRoll_Left', 'shoulderPitch_Right', 'shoulderRoll_Right', 'shoulderYaw_Right', 'elbow_Right', 'wristYaw_Right', 'wristPitch_Right', 'wristRoll_Right']
+  left_arm_joints: ['shoulderPitch_Left', 'shoulderRoll_Left', 'shoulderYaw_Left', 'elbow_Left', 'wristYaw_Left', 'wristPitch_Left', 'wristRoll_Left']
+  right_arm_joints: ['shoulderPitch_Right', 'shoulderRoll_Right', 'shoulderYaw_Right', 'elbow_Right', 'wristYaw_Right', 'wristPitch_Right', 'wristRoll_Right']
+  upper_body_link: 'pelvis'
 
-  left_hip_joints: [hipPitch_Left, hipRoll_Left, hipYaw_Left]
-  right_hip_joints: [hipPitch_Right, hipRoll_Right, hipYaw_Right]
+  left_hip_joints: ['hipPitch_Left', 'hipRoll_Left', 'hipYaw_Left']
+  right_hip_joints: ['hipPitch_Right', 'hipRoll_Right', 'hipYaw_Right']
 
 asset:
   file: /resources/robots/adam_sp/adam_sp.urdf
-  name: adam_sp
-  foot_name: ankleRoll
-  foot_side_name: ankleRoll_side
-  left_foot_name: toeLeft
-  right_foot_name: toeRight
-  penalize_contacts_on: [shin, hip]
+  name: 'adam_sp'
+  foot_name: 'toe'
+  foot_side_name: 'ankleRoll_side'
+  left_foot_name: 'toeLeft'
+  right_foot_name: 'toeRight'
+  penalize_contacts_on: ['shin', 'thigh']
   terminate_after_contacts_on: []
 
-  waist_joints: [waistRoll, waistPitch, waistYaw]
-  knee_joints: [kneePitch_Left, kneePitch_Right]
-  ankle_joints: [anklePitch_Left, anklePitch_Right, wristRoll_Left, wristRoll_Right]
-  upper_body_link: torso
-  imu_link: imu_link
-  knee_names: [shinLeft, shinRight]
+  waist_joints: ['waistRoll', 'waistPitch', 'waistYaw']
+  knee_joints: ['kneePitch_Left', 'kneePitch_Right']
+  ankle_joints: ['anklePitch_Left', 'anklePitch_Right', 'wristRoll_Left', 'wristRoll_Right']
+  upper_body_link: 'torso'
+  imu_link: 'imu_link'
+  knee_names: ['shinLeft', 'shinRight']
 
-  keyframe_name: keyframe
-  base_name: torso
-  lidar_name: mid360
+  keyframe_name: 'keyframe'
+  base_name: 'torso'
+  lidar_name: 'mid360'
 
   # 使用与 g1 一致的脚部绑定约定：物理脚 link <-> keyframe_*_ankle_link
   feet_contact_binding: {
-    left_ankle: toeLeft,
-    right_ankle: toeRight,
+    'left_ankle': 'toeLeft',
+    'right_ankle': 'toeRight',
   }
   keyframe_weights: {
-    head: 1.0, torso: 2.0, pelvis: 2.0,
-    collar: 1.0, shoulder: 1.0, elbow: 1.0, wrist: 2.0,
-    hip: 1.0, knee: 1.0, ankle: 2.0,
+    'head': 1.0, 'torso': 2.0, 'pelvis': 2.0,
+    'collar': 1.0, 'shoulder': 1.0, 'elbow': 1.0, 'wrist': 2.0,
+    'hip': 1.0, 'knee': 1.0, 'ankle': 2.0,
   }
-  upper_keyframe_names: [keyframe_pelvis_link, keyframe_head_link, keyframe_torso_link, keyframe_left_collar_link, keyframe_left_shoulder_link, keyframe_left_elbow_link, keyframe_left_wrist_link, keyframe_right_collar_link, keyframe_right_shoulder_link, keyframe_right_elbow_link, keyframe_right_wrist_link]
-  lower_keyframe_names: [keyframe_left_hip_link, keyframe_left_knee_link, keyframe_left_ankle_link, keyframe_right_hip_link, keyframe_right_knee_link, keyframe_right_ankle_link]
+  upper_keyframe_names: ['keyframe_pelvis_link', 'keyframe_head_link', 'keyframe_torso_link', 'keyframe_left_collar_link', 'keyframe_left_shoulder_link', 'keyframe_left_elbow_link', 'keyframe_left_wrist_link', 'keyframe_right_collar_link', 'keyframe_right_shoulder_link', 'keyframe_right_elbow_link', 'keyframe_right_wrist_link']
+  lower_keyframe_names: ['keyframe_left_hip_link', 'keyframe_left_knee_link', 'keyframe_left_ankle_link', 'keyframe_right_hip_link', 'keyframe_right_knee_link', 'keyframe_right_ankle_link']
 
-  trunk_names: [pelvis, torso]
-  mobile_names: [kneePitch, anklePitch]
-  marker_names: [head, elbow, wrist]
+  trunk_names: ['pelvis', 'torso']
+  mobile_names: ['kneePitch', 'anklePitch']
+  marker_names: ['head', 'elbow', 'wrist']
 
   disable_gravity: false
   collapse_fixed_joints: false
