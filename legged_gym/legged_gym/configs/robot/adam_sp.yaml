@@ -15,11 +15,11 @@ env:
   num_dofs: 29
   # 与 g1 一致：actor 单步观测只到 lidar_pos，不含 imu_quat、base_lin_vel、motion_dof_pos（这些仍在 privileged_obs 里）
   # 单步 = ang_vel(3)+gravity(3)+dof_pos(29)+dof_vel(29)+actions(30)+norm_time(1)+infer(1)+terrain(1)+lidar_pos(3) = 102
-  num_one_step_observations: 102
+  num_one_step_observations: 100
   num_one_step_privileged_obs: 136
-  num_observations: 510
+  num_observations: 500
   num_privileged_obs: 136
-  num_observations_high: 102
+  num_observations_high: 100
   num_privileged_obs_high: 136
 
   env_spacing: 5.
@@ -36,7 +36,7 @@ env:
   ARMATURE_4010: 0.00425
 
 init_state:
-  pos: [1.15, 0., 0.]
+  pos: [0., 0., 0.]
   rot: [0.0, 0.0, 0.0, 1.0]
   lin_vel: [0.0, 0.0, 0.0]
   ang_vel: [0.0, 0.0, 0.0]
@@ -127,7 +127,7 @@ asset:
   file: /resources/robots/adam_sp/adam_sp.urdf
   name: 'adam_sp'
   foot_name: 'toe'
-  foot_side_name: 'ankleRoll_side'
+  foot_side_name: 'ankle_roll_side'
   left_foot_name: 'toeLeft'
   right_foot_name: 'toeRight'
   penalize_contacts_on: ['shin', 'thigh']
@@ -166,7 +166,7 @@ asset:
   fix_base_link: false
   default_dof_drive_mode: 3
   self_collisions: 0
-  replace_cylinder_with_capsule: true
+  replace_cylinder_with_capsule: false
   flip_visual_attachments: false
 
   density: 0.001

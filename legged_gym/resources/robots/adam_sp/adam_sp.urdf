@@ -1600,7 +1600,7 @@
     </inertial>
   </link>
   <joint name="keyframe_head_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="0 0 0.4" rpy="0 0 0" />
     <!-- attach head keyframe to torso -->
     <parent link="torso" />
     <child link="keyframe_head_link" />
@@ -1614,7 +1614,7 @@
     </inertial>
   </link>
   <joint name="keyframe_torso_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="0 0 0.2" rpy="0 0 0" />
     <parent link="torso" />
     <child link="keyframe_torso_link" />
   </joint>
@@ -1640,7 +1640,7 @@
     </inertial>
   </link>
   <joint name="keyframe_left_collar_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="0 0 0.0" rpy="0 0 0" />
     <!-- approximate left collar at left shoulder base -->
     <parent link="shoulderPitchLeft" />
     <child link="keyframe_left_collar_link" />
@@ -1669,7 +1669,7 @@
   </link>
   <joint name="keyframe_left_shoulder_joint" type="fixed" dont_collapse="true">
     <origin xyz="0 0 0" rpy="0 0 0" />
-    <parent link="shoulderPitchLeft" />
+    <parent link="shoulderRollLeft" />
     <child link="keyframe_left_shoulder_link" />
   </joint>
 
@@ -1682,7 +1682,7 @@
   </link>
   <joint name="keyframe_right_shoulder_joint" type="fixed" dont_collapse="true">
     <origin xyz="0 0 0" rpy="0 0 0" />
-    <parent link="shoulderPitchRight" />
+    <parent link="shoulderRollRight" />
     <child link="keyframe_right_shoulder_link" />
   </joint>
 
@@ -1748,7 +1748,7 @@
   </link>
   <joint name="keyframe_left_hip_joint" type="fixed" dont_collapse="true">
     <origin xyz="0 0 0" rpy="0 0 0" />
-    <parent link="hipPitchLeft" />
+    <parent link="hipRollLeft" />
     <child link="keyframe_left_hip_link" />
   </joint>
 
@@ -1761,7 +1761,7 @@
   </link>
   <joint name="keyframe_right_hip_joint" type="fixed" dont_collapse="true">
     <origin xyz="0 0 0" rpy="0 0 0" />
-    <parent link="hipPitchRight" />
+    <parent link="hipRollRight" />
     <child link="keyframe_right_hip_link" />
   </joint>
 
@@ -1793,13 +1793,13 @@
 
   <link name="keyframe_left_ankle_link">
     <inertial>
-      <origin xyz="0 0 0" rpy="0 0 0" />
+      <origin xyz="0 0 0.0" rpy="0 0 0" />
       <mass value="0.001" />
       <inertia ixx="1e-7" ixy="0" ixz="0" iyy="1e-7" iyz="0" izz="1e-7" />
     </inertial>
   </link>
   <joint name="keyframe_left_ankle_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="0.0 0.0 -0.061" rpy="0 0 0" />
     <!-- attach ankle keyframe to toeLeft (foot) -->
     <parent link="toeLeft" />
     <child link="keyframe_left_ankle_link" />
@@ -1813,7 +1813,7 @@
     </inertial>
   </link>
   <joint name="keyframe_right_ankle_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="0.0 0 -0.061" rpy="0 0 0" />
     <!-- attach ankle keyframe to toeRight (foot) -->
     <parent link="toeRight" />
     <child link="keyframe_right_ankle_link" />

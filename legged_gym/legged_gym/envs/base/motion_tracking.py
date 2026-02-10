@@ -2471,7 +2471,8 @@ class LeggedRobot(BaseTask):
         for i in range(self.num_envs):
             motion_body_pos = self.motion_dict["body_pos"][i].clone()
             motion_body_pos = motion_body_pos.cpu().numpy()
-            motion_body_pos[:, :2] += self.env_origin_offset[i, :2].cpu().numpy()
+            # 与 reset 一致：keyframe 世界坐标 = motion 坐标 + env_origin_offset（含 xyz，否则 z 会偏导致黄点相对机器人“偏下/偏后”）
+            motion_body_pos[:, :3] += self.env_origin_offset[i, :3].cpu().numpy()
             motion_body_quat = self.motion_dict["body_quat"][i].cpu().numpy()
             for j in range(len(self.keyframe_indices)):
                 x, y, z = motion_body_pos[j, 0], motion_body_pos[j, 1], motion_body_pos[j, 2]
