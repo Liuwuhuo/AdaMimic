@@ -105,20 +105,20 @@ def filter_legal_motion(datasets, data_names, base_height_range, base_roll_range
         
         
 class MotionLib:
-    def __init__(self, datasets, mapping, dof_names, body_names, fps=30, min_dt=0.1, device="cpu", height_offset=None):
+    def __init__(self, datasets, mapping, dof_names, body_names, fps=30, min_dt=0.1, device="cpu", height_offset=None, dataset_body_order=None):
         self.device, self.fps = device, fps
-        
+
         get_len = lambda x: x["base_position"].shape[0] - 1
         self.length = torch.tensor([get_len(data) for data in datasets], dtype=torch.long, device=device)
         self.num_motion, self.total_length = self.length.shape[0], self.length.sum()
-        
+
         self.num_visit = torch.ones(self.num_motion, dtype=torch.float, device=device)
         self.num_success = torch.zeros(self.num_motion, dtype=torch.float, device=device)
         self.completion = torch.zeros(self.num_motion, dtype=torch.float, device=device)
-        
+
         self.end_ids = torch.cumsum(self.length, dim=0)
         self.start_ids = torch.nn.functional.pad(self.end_ids, (1, -1), "constant", 0)
-        
+
         self.base_rpy = torch.zeros(self.total_length, 3, dtype=torch.float, device=device)
         self.base_pos = torch.zeros(self.total_length, 3, dtype=torch.float, device=device)
         self.base_lin_vel = torch.zeros(self.total_length, 3, dtype=torch.float, device=device)
@@ -131,6 +131,12 @@ class MotionLib:
         self.body_ang_vel = torch.zeros(self.total_length, len(body_names), 3, dtype=torch.float, device=device)
 
         self.body_names = [name for name in body_names]
+        # 数据集 .pt 中 link_position 的列顺序可能与 env keyframe 顺序不一致，需重排
+        if dataset_body_order is not None:
+            self._body_col_idx = [dataset_body_order.index(n) for n in body_names]
+            print(f"MotionLib: reorder body to env keyframe order (dataset_body_order -> body_names), indices={self._body_col_idx}")
+        else:
+            self._body_col_idx = list(range(len(body_names)))
         print(body_names)
 
         def _to_tensor(x):
@@ -158,10 +164,11 @@ class MotionLib:
                     self.dof_vel[start:end, j] = dof_vel[:, mapping[name]]
 
             for k, name in enumerate(body_names):
-                self.body_pos[start:end, k] = _to_tensor(data["link_position"][:-1, k])
-                self.body_rpy[start:end, k] = _to_tensor(data["link_orientation"][:-1, k])
-                self.body_lin_vel[start:end, k] = _to_tensor(data["link_velocity"][:-1, k])
-                self.body_ang_vel[start:end, k] = _to_tensor(data["link_angular_velocity"][:-1, k])
+                col = self._body_col_idx[k]
+                self.body_pos[start:end, k] = _to_tensor(data["link_position"][:-1, col])
+                self.body_rpy[start:end, k] = _to_tensor(data["link_orientation"][:-1, col])
+                self.body_lin_vel[start:end, k] = _to_tensor(data["link_velocity"][:-1, col])
+                self.body_ang_vel[start:end, k] = _to_tensor(data["link_angular_velocity"][:-1, col])
 
             self.body_pos[start:end, :, 0:2] -= self.base_pos[start:start+1, None, 0:2]
             self.base_pos[start:end, 0:2] -= self.base_pos[start:start+1, 0:2].clone() 
@@ -364,20 +371,20 @@ class MotionLib:
             return
 
 class MotionLibAMP:
-    def __init__(self, datasets, mapping, dof_names, body_names, fps=30, min_dt=0.1, device="cpu", amp_obs_type=None, window_length=None, ratio_random_range=None, height_offset=None):
+    def __init__(self, datasets, mapping, dof_names, body_names, fps=30, min_dt=0.1, device="cpu", amp_obs_type=None, window_length=None, ratio_random_range=None, height_offset=None, dataset_body_order=None):
         self.device, self.fps = device, fps
-        
+
         get_len = lambda x: x["base_position"].shape[0] - 1
         self.length = torch.tensor([get_len(data) for data in datasets], dtype=torch.long, device=device)
         self.num_motion, self.total_length = self.length.shape[0], self.length.sum()
-        
+
         self.num_visit = torch.ones(self.num_motion, dtype=torch.float, device=device)
         self.num_success = torch.zeros(self.num_motion, dtype=torch.float, device=device)
         self.completion = torch.zeros(self.num_motion, dtype=torch.float, device=device)
-        
+
         self.end_ids = torch.cumsum(self.length, dim=0)
         self.start_ids = torch.nn.functional.pad(self.end_ids, (1, -1), "constant", 0)
-        
+
         self.base_rpy = torch.zeros(self.total_length, 3, dtype=torch.float, device=device)
         self.base_quat = torch.zeros(self.total_length, 4, dtype=torch.float, device=device)
         self.base_pos = torch.zeros(self.total_length, 3, dtype=torch.float, device=device)
@@ -392,6 +399,11 @@ class MotionLibAMP:
         self.body_ang_vel = torch.zeros(self.total_length, len(body_names), 3, dtype=torch.float, device=device)
 
         self.body_names = [name for name in body_names]
+        if dataset_body_order is not None:
+            self._body_col_idx = [dataset_body_order.index(n) for n in body_names]
+            print(f"MotionLibAMP: reorder body to env keyframe order, indices={self._body_col_idx}")
+        else:
+            self._body_col_idx = list(range(len(body_names)))
 
         compute_velocity = lambda x: (x[1:] - x[:-1]) * self.fps
         print(f"Moving motion dataset to {self.device}...")
@@ -412,12 +424,12 @@ class MotionLibAMP:
                     self.dof_vel[start:end, j] = dof_vel[:, mapping[name]]
 
             for k, name in enumerate(body_names):
-                # import ipdb; ipdb.set_trace()
-                self.body_pos[start:end, k] = torch.tensor(data["link_position"][:-1, k,], dtype=torch.float, device=device).clone().detach()
-                self.body_rpy[start:end, k] = torch.tensor(data["link_orientation"][:-1, k], dtype=torch.float, device=device).clone().detach()
+                col = self._body_col_idx[k]
+                self.body_pos[start:end, k] = torch.tensor(data["link_position"][:-1, col], dtype=torch.float, device=device).clone().detach()
+                self.body_rpy[start:end, k] = torch.tensor(data["link_orientation"][:-1, col], dtype=torch.float, device=device).clone().detach()
                 self.body_quat[start:end, k] = euler_xyz_to_quat(self.body_rpy[start:end, k])
-                self.body_lin_vel[start:end, k] = torch.tensor(data["link_velocity"][:-1, k], dtype=torch.float, device=device).clone().detach()
-                self.body_ang_vel[start:end, k] = torch.tensor(data["link_angular_velocity"][:-1, k], dtype=torch.float, device=device).clone().detach()
+                self.body_lin_vel[start:end, k] = torch.tensor(data["link_velocity"][:-1, col], dtype=torch.float, device=device).clone().detach()
+                self.body_ang_vel[start:end, k] = torch.tensor(data["link_angular_velocity"][:-1, col], dtype=torch.float, device=device).clone().detach()
             
             self.body_pos[start:end, :, 0:2] -= self.base_pos[start:start+1, None, 0:2]
             self.base_pos[start:end, 0:2] -= self.base_pos[start:start+1, 0:2].clone() 

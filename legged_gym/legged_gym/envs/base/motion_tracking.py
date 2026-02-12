@@ -621,6 +621,28 @@ class LeggedRobot(BaseTask):
         # print(self.motion_time)
         # self.reset_buf[:] = self.motions.check_timeout(self.motion_ids[:], self.motion_time[:])
 
+        # ==== DEBUG: 打印早期终止原因（仅 env 0，且 episode 很短时） ====
+        env_id = 0
+        try:
+            if self.reset_buf[env_id] == 1 and self.episode_length_buf[env_id] < 5:
+                print("\n[DEBUG][check_termination] early reset in env 0")
+                print(f"  episode_len              = {int(self.episode_length_buf[env_id].item())}")
+                print(f"  time_out_buf             = {bool(self.time_out_buf[env_id].item())}")
+                print(f"  keyframe_reset_buf       = {bool(self.keyframe_reset_buf[env_id].item())}")
+                if self.cfg.termination.rot_termination:
+                    gx = float(torch.abs(self.projected_gravity[env_id, 0]).item())
+                    gy = float(torch.abs(self.projected_gravity[env_id, 1]).item())
+                    print(f"  rot_termination (|g_xy|) = ({gx:.3f}, {gy:.3f})")
+                if self.cfg.termination.height_termination:
+                    z = float(self.root_states[env_id, 2].item())
+                    print(f"  height_termination z     = {z:.3f}  (threshold 0.4)")
+                if self.cfg.termination.dof_termination:
+                    max_dof_err = float((self.motion_dof_pos[env_id] - self.dof_pos[env_id]).abs().max().item())
+                    print(f"  max dof error            = {max_dof_err:.3f}")
+        except Exception:
+            # debug 打印失败时不要影响训练
+            pass
+
     def reset_idx(self, env_ids):
         """ Reset some environments.
             Calls self._reset_dofs(env_ids), self._reset_root_states(env_ids), and self._resample_commands(env_ids)
@@ -1712,11 +1734,12 @@ class LeggedRobot(BaseTask):
         #     self.motions = MotionLib(dataset, mapping, self.dof_names, self.keyframe_names,
         #                             self.cfg.dataset.frame_rate, self.cfg.dataset.min_time, self.device, self.amp_obs_type, self.cfg.amp.frame_skip, self.cfg.amp.num_steps, self.terrain_types)
         # else:
+        dataset_body_order = getattr(self.cfg.dataset, "body_order", None)
         if not self.amp:
-            self.motions = MotionLib(dataset, mapping, self.dof_names, self.keyframe_names, self.cfg.dataset.frame_rate, self.cfg.dataset.min_time, device=self.device, height_offset=self.cfg.dataset.height_offset)  
+            self.motions = MotionLib(dataset, mapping, self.dof_names, self.keyframe_names, self.cfg.dataset.frame_rate, self.cfg.dataset.min_time, device=self.device, height_offset=self.cfg.dataset.height_offset, dataset_body_order=dataset_body_order)
         else:
             self.motions = MotionLibAMP(dataset, mapping, self.dof_names, self.keyframe_names, self.cfg.dataset.frame_rate, self.cfg.dataset.min_time, device=self.device, \
-                                    amp_obs_type=self.amp_obs_type, window_length=self.cfg.amp.num_steps, ratio_random_range=[0.95, 1.05], height_offset=self.cfg.dataset.height_offset)
+                                    amp_obs_type=self.amp_obs_type, window_length=self.cfg.amp.num_steps, ratio_random_range=[0.95, 1.05], height_offset=self.cfg.dataset.height_offset, dataset_body_order=dataset_body_order)
 
         self.motion_ids = self.motions.sample_motions(self.num_envs)
         self.motion_time = self.motions.sample_time(self.motion_ids, uniform=False)
