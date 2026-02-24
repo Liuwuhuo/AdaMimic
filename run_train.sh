@@ -2,7 +2,15 @@
 
 set -e
 
-# ==== 配置区域：仅环境名可改，conda 路径自动检测 ====
+# ==== 训练配置：在此填写，运行 ./run_train.sh 即可（无需命令行传参）====
+ROBOT="adam_sp"
+DATASET="adam_sp/far_jump"
+ALGORITHM="adamimic/stage1"
+# checkpoint_path：stage1 从零训留空；stage2 填 stage1 的 model_xxxxx.pt；断点续训填上次保存的 pt
+# CHECKPOINT_PATH="/home/liuhongji/workspace/exp/g1_dof29/high_jump/adamimic_stage1/20260210_151754_g1_dof29_high_jump_adamimic_stage1_test/model_39999.pt"
+# CHECKPOINT_PATH=""
+
+# ==== 环境与 GPU ====
 ENV_NAME="adamimic"
 # 指定使用的 GPU（留空则使用默认/全部）。例如: GPU_ID="0" 或 GPU_ID="1,2"
 # 也可在运行时指定: GPU_ID=1 ./run_train.sh ...
@@ -45,8 +53,12 @@ if [ -n "$GPU_ID" ]; then
   export CUDA_VISIBLE_DEVICES="$GPU_ID"
 fi
 
-# 把所有传入参数转发给训练脚本（Hydra 配置等）
-# 示例（必须同时指定 robot / dataset / algorithm）：
-#   ./run_train.sh +robot=g1_dof27 +dataset=g1_dof27/badminton_hit +algorithm=adamimic/stage1
-python legged_gym/legged_gym/scripts/train.py "$@"
+# 使用上面配置的参数启动训练；若命令行有传参则追加（可覆盖部分项）
+TRAIN_ARGS=(
+  "+robot=$ROBOT"
+  "+dataset=$DATASET"
+  "+algorithm=$ALGORITHM"
+)
+[ -n "$CHECKPOINT_PATH" ] && TRAIN_ARGS+=( "checkpoint_path=$CHECKPOINT_PATH" )
+python legged_gym/legged_gym/scripts/train.py "${TRAIN_ARGS[@]}" "$@"
 

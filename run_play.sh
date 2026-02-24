@@ -2,27 +2,51 @@
 
 set -e
 
-# ==== 配置区域：如需修改环境名或 Conda 路径，在这里改 ====
+# ==== 播放配置：在此填写，运行 ./run_play.sh 即可（无需命令行传参）====
+ROBOT="adam_sp"
+DATASET="adam_sp/high_jump"
+ALGORITHM="adamimic/stage1"
+# 要播放的模型路径（stage1 用 stage1 的 model_xxxxx.pt，stage2 用 stage2 的）
+RESUME_PATH="/home/liuhongji/workspace/exp/adam_sp/high_jump/adamimic_stage1/20260211_110912_adam_sp_high_jump_adamimic_stage1_test/model_20000.pt"
+
+# ==== 环境与 GPU ====
 ENV_NAME="adamimic"
-CONDA_BASE="${CONDA_BASE:-/home/liuhongji/anaconda3}"
+GPU_ID=""
 # ==========================================================
 
-# 加载 conda
-if [ -f "$CONDA_BASE/etc/profile.d/conda.sh" ]; then
-  # shellcheck source=/dev/null
-  source "$CONDA_BASE/etc/profile.d/conda.sh"
-else
-  echo "找不到 conda.sh，当前 CONDA_BASE = $CONDA_BASE" >&2
+# 自动检测 CONDA_BASE（与 run_train.sh 一致，可被环境变量 CONDA_BASE 覆盖）
+if [ -z "$CONDA_BASE" ]; then
+  if command -v conda &>/dev/null; then
+    CONDA_BASE="$(conda info --base 2>/dev/null)" || true
+  fi
+  if [ -z "$CONDA_BASE" ] || [ ! -d "$CONDA_BASE" ]; then
+    for d in "$HOME/anaconda3" "$HOME/miniconda3" "$HOME/miniconda" "/opt/conda"; do
+      if [ -f "$d/etc/profile.d/conda.sh" ]; then
+        CONDA_BASE="$d"
+        break
+      fi
+    done
+  fi
+fi
+if [ -z "$CONDA_BASE" ] || [ ! -f "$CONDA_BASE/etc/profile.d/conda.sh" ]; then
+  echo "未找到 conda。可设置: export CONDA_BASE=/path/to/anaconda3 或安装 conda 后重试" >&2
   exit 1
 fi
+# shellcheck source=/dev/null
+source "$CONDA_BASE/etc/profile.d/conda.sh"
 
-# 激活环境
 conda activate "$ENV_NAME"
-
-# 确保能找到 libpython3.8.so.1.0
 export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH:-}"
 
-# 把所有传入参数转发给 play 脚本（Hydra 配置等）
-# 示例（resume_path 换成你实际的 model_xxx.pt 路径）：
-#   ./run_play.sh +robot=g1_dof27 +dataset=g1_dof27/badminton_hit +algorithm=adamimic/stage1 resume_path=../exp/g1_dof27/badminton_hit/adamimic_stage1/时间戳目录/model_500.pt
-python legged_gym/legged_gym/scripts/play.py "$@"
+if [ -n "$GPU_ID" ]; then
+  export CUDA_VISIBLE_DEVICES="$GPU_ID"
+fi
+
+# 使用上面配置的参数启动 play；命令行传参会追加
+PLAY_ARGS=(
+  "+robot=$ROBOT"
+  "+dataset=$DATASET"
+  "+algorithm=$ALGORITHM"
+  "resume_path=$RESUME_PATH"
+)
+python legged_gym/legged_gym/scripts/play.py "${PLAY_ARGS[@]}" "$@"

@@ -5,3 +5,21 @@ defaults:
 dataset:
   folder: ${base}/resources/dataset/adam_sp_data/badminton_hit/output
   joint_mapping: ${base}/resources/dataset/adam_sp_data/joint_id.txt
+  body_order:
+  - keyframe_pelvis_link
+  - keyframe_left_hip_link
+  - keyframe_left_knee_link
+  - keyframe_left_ankle_link
+  - keyframe_right_hip_link
+  - keyframe_right_knee_link
+  - keyframe_right_ankle_link
+  - keyframe_head_link
+  - keyframe_torso_link
+  - keyframe_left_collar_link
+  - keyframe_left_shoulder_link
+  - keyframe_left_elbow_link
+  - keyframe_left_wrist_link
+  - keyframe_right_collar_link
+  - keyframe_right_shoulder_link
+  - keyframe_right_elbow_link
+  - keyframe_right_wrist_link
