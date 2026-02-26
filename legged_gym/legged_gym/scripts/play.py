@@ -68,28 +68,39 @@ def main(cfg):
 
     _, _ = env.reset()
 
-    # 参考帧打印：每 N 步打印一次当前参考 keyframe 的 pos 和 quat（0=不打印）
-    # print_ref_frame_interval = 60  # 约 1 秒一次 @60Hz
-    # step_count = 0
+    # 力矩截断调试：每 N 步打印 env 0 的力矩与限幅，>0 时开启（0=不打印）
+    print_torque_debug_interval = 120  # 约 2 秒一次 @60Hz
+    step_count = 0
 
     for i in range(100000*int(env.max_episode_length)):
         actions = policy(obs.detach())
         obs, critic_obs, obs_high, rews, _ , dones, infos, _ = env.step(actions.detach())
 
-        # 打印当前参考帧（env 0）的 keyframe pos / quat
-        # if print_ref_frame_interval > 0 and (step_count % print_ref_frame_interval == 0):
-        #     body_pos = env.motion_dict["body_pos"][0].cpu().numpy()   # [num_keyframes, 3]
-        #     body_quat = env.motion_dict["body_quat"][0].cpu().numpy() # [num_keyframes, 4] (x,y,z,w)
-        #     norm_time = env.motion_dict.get("norm_time")
-        #     norm_t = float(norm_time[0].cpu().item()) if norm_time is not None else 0.0
-        #     motion_id = int(env.motion_ids[0].cpu().item())
-        #     print(f"\n--- ref frame @ step {step_count} (motion_id={motion_id}, norm_time={norm_t:.4f}) ---")
-        #     for j, name in enumerate(env.keyframe_names):
-        #         pos = body_pos[j]
-        #         quat = body_quat[j]
-        #         print(f"  [{j}] {name}: pos=[{pos[0]:.4f}, {pos[1]:.4f}, {pos[2]:.4f}], quat=[{quat[0]:.4f}, {quat[1]:.4f}, {quat[2]:.4f}, {quat[3]:.4f}]")
-
-        # step_count += 1
+        # 力矩是否被截断：每 N 步都打印一次；有截断则列关节，无则打一行摘要
+        if print_torque_debug_interval > 0 and (step_count % print_torque_debug_interval == 0):
+            limits = env.torque_limits.cpu().numpy()
+            comp = env.computed_torques[0].cpu().numpy()
+            actual = env.torques[0].cpu().numpy()
+            names = env.dof_names
+            clipped = []
+            max_ratio, max_j = 0.0, -1
+            for j in range(len(names)):
+                if limits[j] <= 0:
+                    continue
+                ratio = abs(actual[j]) / limits[j]
+                if ratio > max_ratio:
+                    max_ratio, max_j = ratio, j
+                is_clip = abs(comp[j] - actual[j]) > 1e-4
+                if is_clip or ratio > 0.85:
+                    clipped.append((names[j], float(limits[j]), float(comp[j]), float(actual[j]), ratio, "CLIPPED" if is_clip else ""))
+            if clipped:
+                print(f"\n[torque @ step {step_count}] env 0 力矩接近/触及限幅:")
+                for name, lim, c, a, r, tag in clipped:
+                    print(f"  {name}: limit={lim:.1f}  computed={c:.1f}  actual={a:.1f}  |actual|/limit={r:.2%}  {tag}")
+            else:
+                jname = names[max_j] if max_j >= 0 else ""
+                print(f"[torque @ step {step_count}] env 0 无截断  max |actual|/limit={max_ratio:.2%} ({jname})")
+        step_count += 1
         
 
 if __name__ == '__main__':

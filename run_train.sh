@@ -4,7 +4,7 @@ set -e
 
 # ==== 训练配置：在此填写，运行 ./run_train.sh 即可（无需命令行传参）====
 ROBOT="adam_sp"
-DATASET="adam_sp/far_jump"
+DATASET="adam_sp/high_jump"
 ALGORITHM="adamimic/stage1"
 # checkpoint_path：stage1 从零训留空；stage2 填 stage1 的 model_xxxxx.pt；断点续训填上次保存的 pt
 # CHECKPOINT_PATH="/home/liuhongji/workspace/exp/g1_dof29/high_jump/adamimic_stage1/20260210_151754_g1_dof29_high_jump_adamimic_stage1_test/model_39999.pt"

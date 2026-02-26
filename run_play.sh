@@ -7,7 +7,7 @@ ROBOT="adam_sp"
 DATASET="adam_sp/high_jump"
 ALGORITHM="adamimic/stage1"
 # 要播放的模型路径（stage1 用 stage1 的 model_xxxxx.pt，stage2 用 stage2 的）
-RESUME_PATH="/home/liuhongji/workspace/exp/adam_sp/high_jump/adamimic_stage1/20260211_110912_adam_sp_high_jump_adamimic_stage1_test/model_20000.pt"
+RESUME_PATH="/home/liuhongji/workspace/exp/adam_sp/high_jump/adamimic_stage1/20260225_172502_adam_sp_high_jump_adamimic_stage1_test/model_10000.pt"
 
 # ==== 环境与 GPU ====
 ENV_NAME="adamimic"

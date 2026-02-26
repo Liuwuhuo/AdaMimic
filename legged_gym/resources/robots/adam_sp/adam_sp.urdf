@@ -184,7 +184,7 @@
     <parent link="shinLeft" />
     <child link="anklePitchLeft" />
     <axis xyz="0 1 0" />
-    <limit lower="-1.0" upper="0.35" effort="40" velocity="20" />
+    <limit lower="-1.0" upper="0.35" effort="80" velocity="20" />
   </joint>
   <link name="toeLeft">
     <inertial>
@@ -213,7 +213,7 @@
     <parent link="anklePitchLeft" />
     <child link="toeLeft" />
     <axis xyz="1 0 0" />
-    <limit lower="-0.3491" upper="0.3491" effort="12" velocity="20" />
+    <limit lower="-0.3491" upper="0.3491" effort="80" velocity="20" />
   </joint>
   <link name="hipPitchRight">
     <inertial>
@@ -360,7 +360,7 @@
     <parent link="shinRight" />
     <child link="anklePitchRight" />
     <axis xyz="0 1 0" />
-    <limit lower="-1.0" upper="0.35" effort="40" velocity="20" />
+    <limit lower="-1.0" upper="0.35" effort="80" velocity="20" />
   </joint>
   <link name="toeRight">
     <inertial>
@@ -389,7 +389,7 @@
     <parent link="anklePitchRight" />
     <child link="toeRight" />
     <axis xyz="1 0 0" />
-    <limit lower="-0.3491" upper="0.3491" effort="12" velocity="20" />
+    <limit lower="-0.3491" upper="0.3491" effort="80" velocity="20" />
   </joint>
   <link name="waistRoll_link">
     <inertial>
@@ -1627,7 +1627,7 @@
     </inertial>
   </link>
   <joint name="keyframe_pelvis_joint" type="fixed" dont_collapse="true">
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="0 0 -0.075" rpy="0 0 0" />
     <parent link="pelvis" />
     <child link="keyframe_pelvis_link" />
   </joint>
