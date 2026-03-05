@@ -2,7 +2,7 @@ defaults:
   - base
   - _self_
 
-task_id: jump_step_down
+task_id: jump_step_up
 
 terrain:
   keyframe_pos: 0.08
