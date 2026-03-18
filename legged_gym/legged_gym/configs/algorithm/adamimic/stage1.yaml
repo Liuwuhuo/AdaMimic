@@ -4,7 +4,7 @@ algo_name: adamimic_stage1
 algorithm:
   infer_keyframe_time: true
   apply_reward_scale: true
-  sparse_global: true
+  sparse_global: false
   sparse_local: false
   special_scale: true
   special_scale_size: 50
