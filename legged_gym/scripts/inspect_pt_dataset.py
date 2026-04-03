@@ -104,6 +104,34 @@ def inspect_pt_file(pt_path):
             print(f"\n--- link_position (first frame) ---")
             print(f"  unexpected shape: {lp.shape}, skipping per-link print")
 
+    # 若有 joint_position，打印第一帧全部关节角
+    if "joint_position" in data:
+        jp = data["joint_position"]
+        if isinstance(jp, torch.Tensor):
+            jp = jp.cpu().numpy()
+        if jp.ndim == 2:
+            # shape (T, N_joints)
+            first_frame = jp[0]
+            n_joints = first_frame.shape[0]
+            joint_names = data.get("joint_names", data.get("dof_names", None))
+            if joint_names is not None and hasattr(joint_names, "__len__"):
+                if isinstance(joint_names, (torch.Tensor, np.ndarray)) and joint_names.ndim == 1:
+                    joint_names = [str(joint_names[i]) for i in range(min(len(joint_names), n_joints))]
+                elif isinstance(joint_names, (list, tuple)):
+                    joint_names = list(joint_names)[:n_joints]
+                else:
+                    joint_names = None
+            else:
+                joint_names = None
+            print(f"\n--- joint_position (first frame, all {n_joints} joints, rad) ---")
+            for j in range(n_joints):
+                q = first_frame[j]
+                name_str = f" {joint_names[j]}" if joint_names and j < len(joint_names) else ""
+                print(f"  [{j:2d}]{name_str}: q = {q:.6f}")
+        else:
+            print(f"\n--- joint_position (first frame) ---")
+            print(f"  unexpected shape: {jp.shape}, skipping per-joint print")
+
 
 def visualize_pt_file(pt_path):
     """交互式逐帧可视化 link_position（一次绘制一帧，按键推进）。"""
@@ -129,6 +157,9 @@ def visualize_pt_file(pt_path):
     base = data.get("base_position", None)
     if isinstance(base, torch.Tensor):
         base = base.cpu().numpy()
+    jp = data.get("joint_position", None)
+    if isinstance(jp, torch.Tensor):
+        jp = jp.cpu().numpy()
 
     # 尝试读取 link 名称（若数据中有），否则对 G1 17 keyframes 使用固定顺序映射
     link_names = data.get("link_names", data.get("body_names", None))
@@ -165,6 +196,21 @@ def visualize_pt_file(pt_path):
             "right_elbow",   # 15
             "right_wrist",   # 16
         ]
+
+    # 尝试读取关节名（若数据中有）
+    joint_names = data.get("joint_names", data.get("dof_names", None))
+    if joint_names is not None and hasattr(joint_names, "__len__"):
+        if isinstance(joint_names, (torch.Tensor, np.ndarray)) and joint_names.ndim == 1:
+            if jp is not None and hasattr(jp, "shape") and jp.ndim == 2:
+                joint_names = [str(joint_names[i]) for i in range(min(len(joint_names), jp.shape[1]))]
+            else:
+                joint_names = [str(x) for x in joint_names]
+        elif isinstance(joint_names, (list, tuple)):
+            joint_names = list(joint_names)
+        else:
+            joint_names = None
+    else:
+        joint_names = None
 
     try:
         import matplotlib.pyplot as plt
@@ -216,6 +262,7 @@ def visualize_pt_file(pt_path):
     print("\n交互说明：")
     print("  回车 / n: 下一帧")
     print("  p       : 上一帧")
+    print("  s       : 打印当前帧的 joint_position 与 link_position")
     print("  数字    : 跳转到该帧（1-based）")
     print("  q       : 退出")
 
@@ -237,6 +284,24 @@ def visualize_pt_file(pt_path):
             else:
                 print("已到第一帧。")
                 continue
+        elif cmd.lower() == "s":
+            print(f"\n--- frame {frame+1}/{T}: link_position ---")
+            pts = lp[frame]
+            for j in range(N_links):
+                x, y, z = pts[j]
+                name_str = f" {link_names[j]}" if link_names and j < len(link_names) else ""
+                print(f"  [{j:2d}]{name_str}: pos = [{x:.6f}, {y:.6f}, {z:.6f}]")
+
+            if jp is not None and hasattr(jp, "shape") and jp.ndim == 2 and frame < jp.shape[0]:
+                print(f"\n--- frame {frame+1}/{T}: joint_position (rad) ---")
+                q = jp[frame]
+                n_joints = q.shape[0]
+                for j in range(n_joints):
+                    name_str = f" {joint_names[j]}" if joint_names and j < len(joint_names) else ""
+                    print(f"  [{j:2d}]{name_str}: q = {q[j]:.6f}")
+            else:
+                print("\n当前数据中没有可打印的 joint_position。")
+            continue
         elif cmd.lower() == "q":
             break
         else:

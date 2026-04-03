@@ -24,3 +24,29 @@ dataset:
     - keyframe_right_shoulder_link
     - keyframe_right_elbow_link
     - keyframe_right_wrist_link
+
+asset:
+  # Increase lower-limb tracking priority so policy is less likely to use knee valgus as a shortcut.
+  keyframe_weights:
+    hip: 1.5
+    knee: 2.5
+    ankle: 2.5
+
+rewards:
+  scales:
+    # Stronger tracking terms for lower body / joint pose.
+    sparse_tracking_body_position: 15
+    sparse_tracking_body_position_feet: 20
+    dense_tracking_dof_pos: 1.5
+    dense_tracking_body_position_local: 1.0
+    # Penalize near-limit postures harder to suppress abnormal leg configurations.
+    dense_dof_pos_limits: -20.0
+
+  # Tighten soft position limit to discourage aggressive side deviation.
+  soft_dof_pos_limit: 0.95
+
+  reward_tracking_sigma:
+    # Smaller sigma => stronger penalty on tracking error.
+    dof_pos_sigma: 0.35
+    teleop_lower_body_pos: 0.06
+    teleop_feet_pos: 0.02

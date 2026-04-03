@@ -12,6 +12,8 @@ ALGORITHM="adamimic/stage1"
 
 # ==== 环境与 GPU ====
 ENV_NAME="adamimic"
+# 调试时可降低并行环境数量（例如 128/256），留空则使用配置默认值（train.yaml: 4096）
+NUM_ENVS=""
 # 指定使用的 GPU（留空则使用默认/全部）。例如: GPU_ID="0" 或 GPU_ID="1,2"
 # 也可在运行时指定: GPU_ID=1 ./run_train.sh ...
 GPU_ID=""
@@ -60,5 +62,6 @@ TRAIN_ARGS=(
   "+algorithm=$ALGORITHM"
 )
 [ -n "$CHECKPOINT_PATH" ] && TRAIN_ARGS+=( "checkpoint_path=$CHECKPOINT_PATH" )
+[ -n "$NUM_ENVS" ] && TRAIN_ARGS+=( "num_envs=$NUM_ENVS" )
 python legged_gym/legged_gym/scripts/train.py "${TRAIN_ARGS[@]}" "$@"
 

@@ -77,3 +77,7 @@ legged_gym/legged_gym.egg-info
 *.egg-info
 __pycache__
 **/__pycache__/
+
+# assets
+deploy/robot/
+.python_deps
