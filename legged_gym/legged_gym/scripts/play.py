@@ -1,6 +1,8 @@
 from legged_gym import LEGGED_GYM_ROOT_DIR
 import numpy as np
 import os
+from pathlib import Path
+import json
 
 import isaacgym
 from legged_gym.envs import *
@@ -9,6 +11,33 @@ import torch
 import hydra
 from omegaconf import DictConfig, OmegaConf
 from hydra.core.hydra_config import HydraConfig
+
+
+def _load_snapshot_cfgs(export_policy_path, resume_path):
+    """Load snapshot yaml configs with priority:
+    1) export dir's config_snapshot
+    2) checkpoint run dir's config_snapshot
+    3) fallback to runtime env cfg
+    """
+    candidate_dirs = []
+    if export_policy_path:
+        candidate_dirs.append(Path(export_policy_path).expanduser().resolve() / "config_snapshot")
+    if resume_path:
+        ckpt_path = Path(resume_path).expanduser().resolve()
+        candidate_dirs.append(ckpt_path.parent / "config_snapshot")
+
+    for snapshot_dir in candidate_dirs:
+        if not snapshot_dir.exists():
+            continue
+        loaded = {}
+        for name in ("robot", "algorithm", "dataset"):
+            yaml_path = snapshot_dir / f"{name}.yaml"
+            if yaml_path.exists():
+                loaded[name] = OmegaConf.to_container(OmegaConf.load(yaml_path), resolve=True)
+        if loaded:
+            loaded["_snapshot_dir"] = str(snapshot_dir)
+            return loaded
+    return {}
 
 
 @hydra.main(config_path="../configs", config_name="eval", version_base="1.1")
@@ -42,6 +71,24 @@ def main(cfg):
     policy = ppo_runner.get_inference_policy(device=env.device)
 
     if cfg.export_policy:
+        snapshot_cfgs = _load_snapshot_cfgs(
+            getattr(cfg, "export_policy_path", None),
+            getattr(cfg, "resume_path", None),
+        )
+        robot_snapshot = snapshot_cfgs.get("robot", {})
+        algorithm_snapshot = snapshot_cfgs.get("algorithm", {})
+        dataset_snapshot = snapshot_cfgs.get("dataset", {})
+        snapshot_control = robot_snapshot.get("control", {})
+        snapshot_init_state = robot_snapshot.get("init_state", {})
+
+        stiffness = snapshot_control.get("stiffness", env.cfg.control.stiffness)
+        damping = snapshot_control.get("damping", env.cfg.control.damping)
+        action_scale = snapshot_control.get("action_scale", env.cfg.control.action_scale)
+        default_joint_angles = snapshot_init_state.get(
+            "actutaed_default_joint_angles",
+            env.cfg.init_state.actutaed_default_joint_angles,
+        )
+
         ppo_runner.export_policy_as_jit(ppo_runner.get_actor_critic(), cfg.export_policy_path, cfg.export_policy_name)
         jit_model = torch.jit.load(os.path.join(cfg.export_policy_path, cfg.export_policy_name + '.pt')).to('cuda:0')
         dummy_obs = env.get_observations()
@@ -49,11 +96,11 @@ def main(cfg):
         export_jit_to_onnx(jit_model, export_onnx_path, dummy_obs)
         print('successful export to onnx')
 
-        info = {            
-            "STIFFNESS": env.cfg.control.stiffness,
-            "DAMPING": env.cfg.control.damping,
-            "ACTION SCALE": env.cfg.control.action_scale,
-            "DEFAULT JOINT ANGLES": env.cfg.init_state.actutaed_default_joint_angles,
+        info = {
+            "STIFFNESS": stiffness,
+            "DAMPING": damping,
+            "ACTION SCALE": action_scale,
+            "DEFAULT JOINT ANGLES": default_joint_angles,
             "DOF NAMES": env.dof_names,
             "KEYFRAME NAMES": env.keyframe_names,
             "DEFAULT DOF POS": env.default_dof_pos.cpu().numpy().tolist(),
@@ -61,9 +108,13 @@ def main(cfg):
             "MOTION LENGTH": int(env.motions.length[0]),
             "Difficulty MIN": float(env.terrain_difficulty.min().cpu().item()),
             "Difficulty MAX": float(env.terrain_difficulty.max().cpu().item()),
+            "INFO_CFG_SOURCE": "config_snapshot" if robot_snapshot else "runtime_env_cfg",
+            "INFO_SNAPSHOT_DIR": snapshot_cfgs.get("_snapshot_dir", ""),
+            "ROBOT YAML SNAPSHOT": robot_snapshot,
+            "ALGORITHM YAML SNAPSHOT": algorithm_snapshot,
+            "DATASET YAML SNAPSHOT": dataset_snapshot,
         }
         with open(f'{cfg.export_policy_path}/info' + ".json", "w") as f:
-            import json
             json.dump(info, f, indent=2)
 
     _, _ = env.reset()
